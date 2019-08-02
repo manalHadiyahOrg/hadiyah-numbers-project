@@ -3,6 +3,59 @@
 هدية الحاج والمعتمر - مشرف البرنامج
 @endsection
 @section('content')
+<script>
+$(document).ready(function(){
+
+     window.onpopstate = function() {
+      location.replace('/');
+    }
+$('#password').change(function(){
+
+    var password = document.getElementById("password");
+    var confirm_password = document.getElementById("confirm_password");
+  if(password.value != confirm_password.value) {
+    document.getElementById("update").disabled = true;
+    $('#message').html("ادخل تاكيد لكلمة المرور");
+  }
+});
+$('#confirm_password').change(function(){
+ var password = document.getElementById("password");
+ var confirm_password = document.getElementById("confirm_password");
+if(password.value != confirm_password.value) {
+ document.getElementById("update").disabled = true;
+ $('#message').html("كلمة المرور ليست متطابقة").css('color', 'red');
+} else {
+ document.getElementById("update").disabled = false;
+ $('#message').html("").css('color', 'red');
+ confirm_password.setCustomValidity('');
+}
+});
+  });
+
+
+</script>
+<center>
+  @if(Session::has('message'))
+   <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{ Session::get('message') }}</p>
+  @endif
+    </center>
+    <center>
+  @if(Session::has('error'))
+  <div class="alert alert-danger">
+        <ul><li>{{ Session::get('error') }}</li>
+        </ul>
+    </div>
+  @endif
+    </center>
+@if(Session::has('success'))
+<center>
+<span id="result">
+   <div class="alert alert-success">
+    <p>{{Session::get('success')}} </p>
+</div>
+</span>
+</center>
+@endif
   <div class="container" style="text-align: right;">
     <div dir="rtl">
       </br>
@@ -84,9 +137,13 @@
         }
         ?>
      <p> الايميل: </p> <input type="email" name="email" value="{{$user['email']}}">
+     <p>  كلمة المرور : </p>  <input type="password" name="password"  id="password" >
+     <p> تاكيد كلمة المرور  : </p>  <input type="password" name="password2"  id="confirm_password">
+     <br><span id='message'></span>
+
 <br>
    </br>
-   <input type="submit" name="update" value="التعديل" >
+   <input type="submit" id="update" name="update" value="التعديل" >
  </form>
 </br>
  <form  method="post" action="/delete/{{$user['id']}}" class='formModel'>

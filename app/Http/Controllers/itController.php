@@ -20,49 +20,68 @@ class itController extends Controller
 {
   public function __construct(){
     $this->middleware('auth:it');
-  } 
-  public function index() { 
+  }
+  public function index() {
     $jop=" إدارة تقنية المعلومات";
-    SessionController::Session($jop); 
+    SessionController::Session($jop);
     return view('GUIit');
   }
   public function signup(Request $request)
   {
+
     $text0="تم فتح الحساب";
       if($request->jobName=="observer"){
-        $observer=new Observer();
+         $olduse=Observer::where('email','=',$request->email)->first();
+         if(!isset($olduse)){
+          $observer=new Observer();
           $observer->f_name=$request->f_name;
           $observer->s_name=$request->s_name;
           $observer->l_name=$request->l_name;
           $observer->email=$request->email;
 
           $observer->password=bcrypt($request->password);
-          $observer->save();
-
+          $observer->save();}
+        else {
+          return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
+          }
       }elseif($request->jobName=="supervisor"){
+        $olduse=Superviser::where('email','=',$request->email)->first();
+        if(!isset($olduse)){
           $Superviser=new Superviser();
           $Superviser->f_name=$request->f_name;
           $Superviser->s_name=$request->s_name;
           $Superviser->l_name=$request->l_name;
           $Superviser->email=$request->email;
           $Superviser->password=bcrypt($request->password);
-          $Superviser->save();
+          $Superviser->save();}
+
+          else {
+            return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
+            }
 
         }elseif($request->jobName=="admin"){
+          $olduse=Admin::where('email','=',$request->email)->first();
+          if(!isset($olduse)){
             $Admin=new Admin();
             $Admin->f_name=$request->f_name;
             $Admin->s_name=$request->s_name;
             $Admin->l_name=$request->l_name;
             $Admin->email=$request->email;
             $Admin->password=bcrypt($request->password);
-            $Admin->save();
+            $Admin->save();}
+            else {
+              return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
+              }
 
-        }else{
-          $text0="لم يتم فتح الحساب";
+
+        }
+        else{
+
+          return redirect('/GUIit')->with('error','لم يتم فتح الحساب');
         }
 
+        return redirect('/GUIit')->with('success', 'تم فتح حساب');
 
-      return view('GUIit',compact('text0'));
 
   }
 
@@ -81,14 +100,22 @@ class itController extends Controller
               $user=Observer::find($req->Search);
 
         }else{
-          $text='No Details found. Try to search again !';
-          return view('GUIit',compact('text'));
+          Session::flash('message','لا يوجد موظف يحمل هذا الرقم الوظيفي');
+          Session::flash('alert-class', 'alert-danger');
+          return  back();
+
         }
 
-        if($user=='')
-           $text= 'لا يوجد موظف يحمل هذا الرقم الوظيفي';
+        if(!isset($user)){
+          Session::flash('message','لا يوجد موظف يحمل هذا الرقم الوظيفي');
+          Session::flash('alert-class', 'alert-danger');
+          return   back();
+          }
+        else {
+          return  view('GUIit',compact('user'));
+        }
 
-           return view('GUIit',compact('text'),compact('user'));
+
 
    }
 
@@ -97,30 +124,31 @@ class itController extends Controller
 
    public function update(Request $request, $id)
   {
-      //Validate
-  //    $request->validate([
-    //      'title' => 'required|min:3',
-//'description' => 'required',
-  //    ]);
-$text='done';
+
+$text='تم';
 
    if(  substr ( $id ,0,2 ) == 11 ){
 
     $user=Admin::find($id);
 
      if($request->jobName=="admin"){
-     $user->email = $request->email;
+         $user->email = $request->email;
+         if($request->password!==null){
+            $user->password=bcrypt($request->password);}
      $user->save();
     }else{
 
       if($request->jobName=="observer"){
         $observer=new Observer();
-
           $observer->f_name=$user->f_name;
           $observer->s_name=$user->s_name;
           $observer->l_name=$user->l_name;
           $observer->email=$request->email;
-          $observer->password=$user->password;
+
+          if($request->password!==null){
+            $observer->password=bcrypt($request->password);
+          }else{
+            $observer->password=$user->password;}
 
           $observer->save();
 
@@ -131,7 +159,11 @@ $text='done';
           $Superviser->s_name=$user->s_name;
           $Superviser->l_name=$user->l_name;
           $Superviser->email=$request->email;
-          $Superviser->password=$user->password;
+
+          if($request->password!==null){
+            $Superviser->password=bcrypt($request->password);
+          }else{
+             $Superviser->password=$user->password;}
 
           $Superviser->save();
 
@@ -145,7 +177,9 @@ $text='done';
      $user=Superviser::find($id);
 
      if($request->jobName=="supervisor"){
-     $user->email = $request->email;
+        $user->email = $request->email;
+        if($request->password!==null){
+          $user->password=bcrypt($request->password);}
      $user->save();
     }else{
 
@@ -156,7 +190,10 @@ $text='done';
           $observer->s_name=$user->s_name;
           $observer->l_name=$user->l_name;
           $observer->email=$request->email;
-          $observer->password=$user->password;
+          if($request->password!==null){
+            $observer->password=bcrypt($request->password);
+          }else{
+            $observer->password=$user->password;}
 
           $observer->save();
 
@@ -167,7 +204,10 @@ $text='done';
         $Admin->s_name=$user->s_name;
         $Admin->l_name=$user->l_name;
         $Admin->email=$request->email;
-        $Admin->password=$user->password;
+        if($request->password!==null){
+          $Admin->password=bcrypt($request->password);
+        }else{
+            $Admin->password=$user->password;}
         $Admin->save();
 
         }
@@ -179,29 +219,36 @@ $text='done';
      $user=Observer::find($id);
 
      if($request->jobName=="observer"){
-     $user->email = $request->email;
+       $user->email = $request->email;
+       if($request->password!==null){
+       $user->password=bcrypt($request->password); }
      $user->save();
     }else{
 
       if($request->jobName=="supervisor"){
           $Superviser=new Superviser();
-
           $Superviser->f_name=$user->f_name;
           $Superviser->s_name=$user->s_name;
           $Superviser->l_name=$user->l_name;
           $Superviser->email=$request->email;
-          $Superviser->password=$user->password;
+          if($request->password!==null){
+            $Superviser->password=bcrypt($request->password);
+          }else{
+            $Superviser->password=$user->password;}
 
           $Superviser->save();
 
       }elseif($request->jobName=="admin"){
         $Admin=new Admin();
-
         $Admin->f_name=$user->f_name;
         $Admin->s_name=$user->s_name;
         $Admin->l_name=$user->l_name;
         $Admin->email=$request->email;
-        $Admin->password=$user->password;
+
+        if($request->password!==null){
+          $user->password=bcrypt($request->password);
+        }else {
+           $Admin->password=$user->password;}
         $Admin->save();
 
         }
@@ -209,11 +256,12 @@ $text='done';
     }
 
    }else{
-     $text='can not update';
+    $error='لم يتم تحديث البيانات';
+    return redirect('/GUIit')->with($error);
 
    }
 
-     return view('GUIit',compact('text'));
+   return redirect('/GUIit')->with('success', 'تم  التحديث');
    }
 
 
@@ -238,11 +286,12 @@ $text='done';
         $user->delete();
 
      }else{
-       $text='can not delete';
+      $error='لم يتم حذف الحساب';
+      return redirect('/GUIit')->with('error',$error);
 
      }
 
-       return view('GUIit',compact('text'));
+     return  redirect('/GUIit')->with('success', 'تم  حذف الحساب');
 
    }
 }
