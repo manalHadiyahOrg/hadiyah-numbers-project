@@ -1,0 +1,15 @@
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+<<<<<<< HEAD
+.env.backup
+=======
+>>>>>>> 2ac5b553f75ac773d61000d1321dda582edee73b
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
