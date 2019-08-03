@@ -15,7 +15,7 @@ use App\Atonement_And_Zakaat_Form;
 use App\Zakaat_Form_Institution;
 use App\Material;
 use App\location;
-use App\servies_materias;
+use App\services_materials;
 use App\Body_Food_Form;
 use App\Body_Food_Forms_Material;
 use App\Care_Form;
@@ -54,6 +54,7 @@ public function update(Request $request){
        'sum_materials' =>$sum_materials,'materials_name'=>$sum_materials_by_id[0],
        'materials_number'=>$sum_materials_by_id[1],'program_name'=>$program->name,'program_id'=>$program->id];
     }
+
     // غذاء البدن
     elseif($program->id==2){
         $total_beneficiaries=StatisticalController::count_beneficiaries_body_food($datefrom,$dateto);
@@ -92,8 +93,7 @@ public function update(Request $request){
          $sum_delegations=StatisticalController::Sum_delegations($datefrom,$dateto);
          $sum_nationality=StatisticalController::Sum_delegations_by_nationality($datefrom,$dateto);
 
-         return ['
-         ' =>$total_beneficiaries,
+         return ['total_beneficiaries' =>$total_beneficiaries,
          'location_name' =>$count_beneficiariesbylocation[0],'beneficiaries_number'=>$count_beneficiariesbylocation[1],
          'conectionpoint_name' =>$count_beneficiariesbyconectionpoint[0],'beneficiariesbycon_number'=>$count_beneficiariesbyconectionpoint[1],
          'sum_materials' =>$sum_materials,'materials_name'=>$sum_materials_by_id[0],
@@ -114,7 +114,7 @@ public function update(Request $request){
        return ['name1' => $charts1['name1'],'data1' => $charts1['data1'],  'total1' => $charts1['total1'],
        'name2' => $charts2['name2'],'data2' => $charts2['data2'],  'total2' => $charts2['total2'],
        'name3' => $charts3['name3'],'data3' => $charts3['data3'], 'total3' => $charts3['total3'],'program_name'=>$program->name,'program_id'=>$program->id];
-  
+
 
      }
     }
@@ -186,7 +186,7 @@ public function create($id) {
             $sum_delegations=StatisticalController::Sum_delegations($datefrom,$dateto);
             $sum_nationality=StatisticalController::Sum_delegations_by_nationality($datefrom,$dateto);
 
-            return view('GUIStatisticstow',['total_beneficiaries' =>$total_beneficiaries,
+            return  view('GUIStatisticstow',['total_beneficiaries' =>$total_beneficiaries,
             'location_name' =>$count_beneficiariesbylocation[0],'beneficiaries_number'=>$count_beneficiariesbylocation[1],
             'conectionpoint_name' =>$count_beneficiariesbyconectionpoint[0],'beneficiariesbycon_number'=>$count_beneficiariesbyconectionpoint[1],
             'sum_materials' =>$sum_materials,'materials_name'=>$sum_materials_by_id[0],
@@ -255,6 +255,11 @@ public static function count_beneficiaries_by_location_soul__food__forms($from ,
     $location[]=$beneficiari->location;
     $beneficiariesnumber[]=0+$beneficiari->number_of_beneficiaries;
   }
+  $all_location= location::all()->unique('location')->whereNotIn('location',$location)->pluck('location');
+  foreach ($all_location as $loca) {
+       $location[] = [$loca];
+       $beneficiariesnumber[] = 0;
+  }
   return [$location,$beneficiariesnumber];
 }
 // المستفيدين حسب نقطة الاتصال
@@ -289,12 +294,23 @@ public static function Sum_soul__food__forms__materials_materials_by_id ($from,$
             ->whereBetween('date',[$from,$to])
             ->select(DB::raw('material_id'),DB::raw('SUM(count) as count'))
             ->groupBy(DB::raw('material_id'))->get();
-  $materials_name=[];
-  $materialsnumber=[];
-  foreach($materials as $materia){
-    $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
-    $materialsnumber[]=0+$materia->count;
-  }
+            $materials_name=[];
+            $materialsnumber=[];
+            $mater_id=[];
+            $ser_mat=[];
+            foreach($materials as $materia){
+              $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
+              $mater_id[]=$materia->material_id;
+              $materialsnumber[]=0+$materia->count;
+            }
+            $services=Service::where('program_id','=',1)->pluck('id');
+            $ser_mat=services_materials::all()->unique('material_id')->whereIn('service_id',$services)->whereNotIn('material_id',$mater_id)->pluck('material_id');
+            if(isset($ser_mat)){
+              $all_materials=Material::all()->unique('id')->whereNotIn('name',$materials_name)->whereIn('id',$ser_mat)->pluck('name');
+            foreach ($all_materials as $material) {
+              $materials_name[] = [$material];
+              $materialsnumber[] = 0;
+          }}
  return [$materials_name,$materialsnumber];
 }
 
@@ -317,6 +333,11 @@ public static function count_beneficiaries_by_location_body__food__forms($from ,
   foreach($beneficiaries as $beneficiari ){
     $location[]=$beneficiari->location;
     $beneficiariesnumber[]= 0+$beneficiari->number_of_beneficiaries;
+  }
+  $all_location= location::all()->unique('location')->whereNotIn('location',$location)->pluck('location');
+  foreach ($all_location as $loca) {
+       $location[] = [$loca];
+       $beneficiariesnumber[] = 0;
   }
   return  [$location,$beneficiariesnumber];
 }
@@ -355,12 +376,23 @@ public static function Sum_body_food_materials_by_id ($from ,$to){
     ->select(DB::raw('material_id'),DB::raw('SUM(count) as count'))
                       ->groupBy(DB::raw('material_id'))
                       ->get();
-    $materials_name=[];
-    $materialsnumber=[];
-    foreach($materials as $materia){
-      $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
-      $materialsnumber[]=0+$materia->count;
-    }
+                      $materials_name=[];
+                      $materialsnumber=[];
+                      $mater_id=[];
+                      $ser_mat=[];
+                      foreach($materials as $materia){
+                        $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
+                        $mater_id[]=$materia->material_id;
+                        $materialsnumber[]=0+$materia->count;
+                      }
+                      $services=Service::where('program_id','=',2)->pluck('id');
+                      $ser_mat=services_materials::all()->unique('material_id')->whereIn('service_id',$services)->whereNotIn('material_id',$mater_id)->pluck('material_id');
+                      if(isset($ser_mat)){
+                        $all_materials=Material::all()->unique('id')->whereNotIn('name',$materials_name)->whereIn('id',$ser_mat)->pluck('name');
+                      foreach ($all_materials as $material) {
+                        $materials_name[] = [$material];
+                        $materialsnumber[] = 0;
+                    }}
     return [$materials_name,$materialsnumber];
 }
 
@@ -385,6 +417,11 @@ public static function count_beneficiaries_by_location_care_forms($from ,$to){
     foreach( $beneficiaries as $beneficiari ){
       $location[]=$beneficiari->location;
       $beneficiariesnumber[]=0+$beneficiari->number_of_beneficiaries;
+    }
+    $all_location= location::all()->unique('location')->whereNotIn('location',$location)->pluck('location');
+    foreach ($all_location as $loca) {
+         $location[] = [$loca];
+         $beneficiariesnumber[] = 0;
     }
     return [$location,$beneficiariesnumber];
 }
@@ -420,12 +457,23 @@ public static function Sum_care_forms_materials_by_id ($from,$to){
             ->whereBetween('date',[$from,$to])
             ->select(DB::raw('material_id'),DB::raw('SUM(count) as count'))
             ->groupBy(DB::raw('material_id'))->get();
- $materials_name=[];
- $materialsnumber=[];
- foreach($materials as $materia){
-    $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
-    $materialsnumber[]=0+$materia->count;
-  }
+            $materials_name=[];
+            $materialsnumber=[];
+            $mater_id=[];
+            $ser_mat=[];
+            foreach($materials as $materia){
+              $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
+              $mater_id[]=$materia->material_id;
+              $materialsnumber[]=0+$materia->count;
+            }
+            $services=Service::where('program_id','=',5)->pluck('id');
+            $ser_mat=services_materials::all()->unique('material_id')->whereIn('service_id',$services)->whereNotIn('material_id',$mater_id)->pluck('material_id');
+            if(isset($ser_mat)){
+              $all_materials=Material::all()->unique('id')->whereNotIn('name',$materials_name)->whereIn('id',$ser_mat)->pluck('name');
+            foreach ($all_materials as $material) {
+              $materials_name[] = [$material];
+              $materialsnumber[] = 0;
+          }}
   return [$materials_name,$materialsnumber];
 }
 
@@ -447,13 +495,20 @@ public static function count_beneficiaries_by_location_hospitable__forms($from ,
                   ->groupBy('location')->get();
   $location=[];
   $beneficiariesnumber=[];
+  $all_location=[];
   foreach( $beneficiaries as $beneficiari ){
     $location[]=$beneficiari->location;
     $beneficiariesnumber[]=0+$beneficiari->number_of_beneficiaries; }
     $location[]= ['غير محددة'];
     $beneficiariesnumber[]=0+Delegation::whereBetween('date',[$from,$to])->sum('number_of_women')
-    +Delegation::whereBetween('date',[$from,$to])->sum('number_of_children')+Delegation::whereBetween('date',[$from,$to])->sum('number_of_men');
+    +Delegation::whereBetween('date',[$from,$to])->sum('number_of_children')
+    +Delegation::whereBetween('date',[$from,$to])->sum('number_of_men');
 
+    $all_location= location::all()->unique('location')->whereNotIn('location',$location)->pluck('location');
+    foreach ($all_location as $loca) {
+         $location[] = [$loca];
+         $beneficiariesnumber[] = 0;
+    }
   return [$location,$beneficiariesnumber];}
 
 // المستفيدين حسب نقطة الاتصال
@@ -465,6 +520,7 @@ public static function count_beneficiaries_by_conectionpoint_hospitable__forms($
                  ->groupBy(DB::raw('location_id'))->get();
   $connection_point=[];
   $beneficiariesnumber=[];
+  $all_location=[];
   foreach( $beneficiaries as $beneficiari ){
     $connection_point[]=location::where('id','=',$beneficiari->location_id)->pluck('connection_point');
     $beneficiariesnumber[]=0+$beneficiari->number_of_beneficiaries;
@@ -490,10 +546,21 @@ public static function Sum_hospitable__forms_materials_by_id($from,$to){
              ->groupBy(DB::raw('material_id'))->get();
   $materials_name=[];
   $materialsnumber=[];
+  $mater_id=[];
+  $ser_mat=[];
   foreach($materials as $materia){
     $materials_name[]=Material::where('id','=',$materia->material_id)->pluck('name');
+    $mater_id[]=$materia->material_id;
     $materialsnumber[]=0+$materia->count;
   }
+  $services=Service::where('program_id','=',4)->pluck('id');
+  $ser_mat=services_materials::all()->unique('material_id')->whereIn('service_id',$services)->whereNotIn('material_id',$mater_id)->pluck('material_id');
+  if(isset($ser_mat)){
+    $all_materials=Material::all()->unique('id')->whereNotIn('name',$materials_name)->whereIn('id',$ser_mat)->pluck('name');
+  foreach ($all_materials as $material) {
+    $materials_name[] = [$material];
+    $materialsnumber[] = 0;
+}}
   return [$materials_name,$materialsnumber];
 }
 

@@ -32,15 +32,17 @@ class itController extends Controller
     $text0="تم فتح الحساب";
       if($request->jobName=="observer"){
          $olduse=Observer::where('email','=',$request->email)->first();
+         $newuse;
          if(!isset($olduse)){
           $observer=new Observer();
           $observer->f_name=$request->f_name;
           $observer->s_name=$request->s_name;
           $observer->l_name=$request->l_name;
           $observer->email=$request->email;
-
           $observer->password=bcrypt($request->password);
-          $observer->save();}
+          $observer->save();
+          $newuse=Observer::where('email','=',$observer->email)->first();
+        }
         else {
           return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
           }
@@ -53,8 +55,9 @@ class itController extends Controller
           $Superviser->l_name=$request->l_name;
           $Superviser->email=$request->email;
           $Superviser->password=bcrypt($request->password);
-          $Superviser->save();}
-
+          $Superviser->save();
+          $newuse=Superviser::where('email','=',$Superviser->email)->first();
+        }
           else {
             return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
             }
@@ -68,7 +71,9 @@ class itController extends Controller
             $Admin->l_name=$request->l_name;
             $Admin->email=$request->email;
             $Admin->password=bcrypt($request->password);
-            $Admin->save();}
+            $Admin->save();
+            $newuse=Admin::where('email','=',$Admin->email)->first();
+          }
             else {
               return redirect('/GUIit')->with('error','البريد الالكتروني مسجل لمستخدم ');
               }
@@ -79,8 +84,8 @@ class itController extends Controller
 
           return redirect('/GUIit')->with('error','لم يتم فتح الحساب');
         }
-
-        return redirect('/GUIit')->with('success', 'تم فتح حساب');
+        $text0= " : الرقم الوظيفي".$newuse->id." كلمة المرور : ".$request->password;
+        return redirect('/GUIit')->with(['success'=>'تم فتح حساب','text'=>$text0]);
 
 
   }

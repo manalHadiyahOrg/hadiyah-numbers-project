@@ -5,7 +5,7 @@
 @section('content')
 <script>
 $(document).ready(function(){
-
+  window.history.pushState(null, "", window.location.href);
      window.onpopstate = function() {
       location.replace('/');
     }
@@ -88,10 +88,15 @@ if(password.value != confirm_password.value) {
              <input type="submit" name="">
            </form>
          </center>
-@if(isset($text0))
-{{$text0}}
+@if(Session::has('text'))
+<center>
+<span id="result">
+   <div>
+    <p>{{Session::get('text')}} </p>
+</div>
+</span>
+</center>
 @endif
-
    <br/>
    <br>
    <center>

@@ -6,6 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateSupervisersTable extends Migration
 {
+  public function boot()
+{
+    Schema::defaultStringLength(191);
+}
     /**
      * Run the migrations.
      *
@@ -18,8 +22,8 @@ class CreateSupervisersTable extends Migration
             $table->string('f_name');
             $table->string('s_name');
             $table->string('l_name');
-            $table->string('email')->unique();
-            $table->string('password',255);
+            $table->string('email',191)->unique();
+            $table->string('password',191);
             $table->integer('admin_id')->unsigned()->nullable();
             $table->integer('program_id')->unsigned()->nullable();
 

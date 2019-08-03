@@ -1,3 +1,4 @@
+
 @extends('templates.hadiyah')
 @section('title')
 إحصائيات الوكالات
@@ -160,8 +161,8 @@
              type:"get",
              data:{from:from ,to:to,_token:_token,program_id:program_id},
              success:function(result){
-               console.log(result.data1);
-               console.log(result.data1);
+               console.log(result.name3);
+               console.log(result.data3);
                if(result.name1.length>0){
                 //
                   chart1.series[0].setData(result.data1);
@@ -180,8 +181,8 @@
                if(result.name3.length>0){
                    //
                    chart3.series[0].setData(result.data3);
-                   chart3.xAxis[0].setCategories(result.name3);
-                   chart3.setTitle(null, { text: result.total2+' =  العدد الإجمالي للكفارات / زكاة الفطر' });
+                   chart3.xAxis[0].setCategories(result.name3);// تغير
+                   chart3.setTitle(null, { text: result.total3+' =  العدد الإجمالي للكفارات / زكاة الفطر' });
                }
                else {$('#chart3').html('<div class="alert ">لايوجد بيانات </div>');}
             }

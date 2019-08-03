@@ -1,3 +1,4 @@
+
 @extends('templates.hadiyah')
 @section('title')
 هدية الحاج والمعتمر
@@ -267,8 +268,8 @@
                type:"get",
                data:{from:from ,to:to,_token:_token,program_id:program_id},
                success:function(result){
-                   console.log(result.nationality_name);
-                   console.log(result.materials_number);
+                   console.log(result.total);
+                   console.log(result.delegations_name);
                    if(result.beneficiaries_number.length>=0){
                     //
                       chart_beneficiaries.series[0].setData(result.beneficiaries_number);
@@ -299,16 +300,17 @@
                              name: result.delegations_name[i],
                              y: result.delegationss_number[i] });
                        }
-                       delegations.xAxis[0].setCategories(final1);
+                       delegations.series[0].setData(final1);
                        delegations.setTitle(null, { text: result.total+' = العدد الإجمالي لأعداد المستفيدين '});
                        var final2 = [];
                        for(var i=0; i < result.nationality_name.length; i++) {
                          final2.push({
                              name: result.nationality_name[i],
                              y: result.nationality_number[i] });
+
+                      }
                              nationalit.series[0].setData(final2);
                              nationalit.setTitle(null, { text: result.total+' = العدد الإجمالي لأعداد المستفيدين '});
-                      }
                   }
                   else {$('#delegati').html('<div class="alert ">لايوجد بيانات </div>');}
               }

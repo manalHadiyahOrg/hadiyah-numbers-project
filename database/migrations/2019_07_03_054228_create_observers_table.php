@@ -6,6 +6,10 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateObserversTable extends Migration
 {
+  public function boot()
+{
+    Schema::defaultStringLength(191);
+}
     /**
      * Run the migrations.
      *
@@ -20,8 +24,8 @@ class CreateObserversTable extends Migration
           $table->string('f_name');
           $table->string('s_name');
           $table->string('l_name');
-          $table->string('email')->unique();
-          $table->string('password',255);
+          $table->string('email',191)->unique();
+          $table->string('password',191);
           $table->integer('service_id')->unsigned()->nullable();
           $table->integer('superviser_id')->unsigned()->nullable();
           $table->integer('location_id')->unsigned()->nullable();
